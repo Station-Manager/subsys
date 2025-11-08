@@ -9,10 +9,12 @@ import (
 type Service struct {
 	isInitialized atomic.Bool
 	isStarted     atomic.Bool
+	initOnce      sync.Once
 	initErr       error
 	mu            sync.Mutex
 }
 
+// Initialize ensures the service is initialized and ready for use. It is idempotent and thread-safe.
 func (s *Service) Initialize() error {
 	const op errors.Op = "subsys.Service.Initialize"
 	if s == nil {
@@ -23,11 +25,16 @@ func (s *Service) Initialize() error {
 		return nil // Exit gracefully
 	}
 
-	s.isInitialized.Store(true)
+	s.initOnce.Do(func() {
+
+		s.isInitialized.Store(true)
+	})
 
 	return s.initErr
 }
 
+// Start starts the service. This is a blocking call and is not idempotent, if there is an issue starting the subsystem,
+// it will return an error.
 func (s *Service) Start() error {
 	const op errors.Op = "subsys.Service.Start"
 	if s == nil {

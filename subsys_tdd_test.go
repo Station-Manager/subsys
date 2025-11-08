@@ -15,6 +15,29 @@ func TestSubSys(T *testing.T) {
 	suite.Run(T, new(TestSuite))
 }
 
+func (t *TestSuite) TestConcurrentInitialize() {
+	service := &Service{}
+
+	const goroutines = 100
+	done := make(chan error, goroutines)
+
+	// Launch concurrent Initialize calls
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			done <- service.Initialize()
+		}()
+	}
+
+	// Collect results - all should succeed (Initialize is idempotent)
+	for i := 0; i < goroutines; i++ {
+		err := <-done
+		assert.NoError(t.T(), err, "All Initialize() calls should succeed")
+	}
+
+	// Verify service is initialized
+	assert.True(t.T(), service.isInitialized.Load())
+}
+
 func (t *TestSuite) TestConcurrentStart() {
 	service := &Service{}
 
