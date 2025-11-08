@@ -26,8 +26,18 @@ func (s *Service) Initialize() error {
 	}
 
 	s.initOnce.Do(func() {
+		// Perform initialization and capture any error.
+		// Replace the following with real initialization logic.
+		s.initErr = func() error {
+			// Do some initialization here
+			// If there is an error, store it in s.initErr and return
+			return nil
+		}()
 
-		s.isInitialized.Store(true)
+		// Only set isInitialized to true if there was no error during initialization
+		if s.initErr == nil {
+			s.isInitialized.Store(true)
+		}
 	})
 
 	return s.initErr

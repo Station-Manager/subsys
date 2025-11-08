@@ -15,6 +15,30 @@ func TestSubSys(T *testing.T) {
 	suite.Run(T, new(TestSuite))
 }
 
+func (t *TestSuite) TestNilService() {
+	var service *Service
+	err := service.Initialize()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNilService)
+	err = service.Start()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNilService)
+	err = service.Stop()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNilService)
+}
+
+func (t *TestSuite) TestStartAndStopWithoutInitialize() {
+	service := &Service{}
+	err := service.Start()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNotInitialized)
+
+	err = service.Stop()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNotInitialized)
+}
+
 func (t *TestSuite) TestConcurrentInitialize() {
 	service := &Service{}
 
