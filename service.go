@@ -1,17 +1,21 @@
 package subsys
 
 import (
+	"github.com/Station-Manager/config"
+	"github.com/Station-Manager/database"
 	"github.com/Station-Manager/errors"
 	"sync"
 	"sync/atomic"
 )
 
 type Service struct {
-	isInitialized atomic.Bool
-	isStarted     atomic.Bool
-	initOnce      sync.Once
-	initErr       error
-	mu            sync.Mutex
+	ConfigService   *config.Service   `inject:"configservice"`
+	DatabaseService *database.Service `inject:"databaseservice"`
+	isInitialized   atomic.Bool
+	isStarted       atomic.Bool
+	initOnce        sync.Once
+	initErr         error
+	mu              sync.Mutex
 }
 
 // Initialize ensures the service is initialized and ready for use. It is idempotent and thread-safe.
@@ -26,13 +30,15 @@ func (s *Service) Initialize() error {
 	}
 
 	s.initOnce.Do(func() {
-		// Perform initialization and capture any error.
-		// Replace the following with real initialization logic.
-		s.initErr = func() error {
-			// Do some initialization here
-			// If there is an error, store it in s.initErr and return
-			return nil
-		}()
+		if s.ConfigService == nil {
+			s.initErr = errors.New(op).Msg(errMsgNilConfigService)
+			return
+		}
+
+		if s.DatabaseService == nil {
+			s.initErr = errors.New(op).Msg(errMsgNilDatabaseService)
+			return
+		}
 
 		// Only set isInitialized to true if there was no error during initialization
 		if s.initErr == nil {

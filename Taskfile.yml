@@ -13,11 +13,12 @@ tasks:
     cmds:
       - echo "Building {{.MODULE_NAME}} module..."
       - go mod download
+      - go get -u
       - go mod verify
       - go mod tidy
       - go vet ./...
       - go build ./...
-      - go test -race -run Test ./...
+      - go test -v -race
       - task: clean
       - echo "✓ {{.MODULE_NAME}} module build complete"
 
@@ -28,8 +29,6 @@ tasks:
   clean:
     desc: "Clean up build artifacts"
     cmds:
-      - rm -rf ./relative
-      - rm -r ./data
       - echo "Build artifacts cleaned"
 #
 #  docker:start:

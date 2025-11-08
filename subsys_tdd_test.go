@@ -1,6 +1,8 @@
 package subsys
 
 import (
+	"github.com/Station-Manager/config"
+	"github.com/Station-Manager/database"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -28,6 +30,22 @@ func (t *TestSuite) TestNilService() {
 	assert.Contains(t.T(), err.Error(), errMsgNilService)
 }
 
+func (t *TestSuite) TestNilConfigService() {
+	service := &Service{}
+	err := service.Initialize()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNilConfigService)
+}
+
+func (t *TestSuite) TestNilDatabaseService() {
+	service := &Service{
+		ConfigService: &config.Service{},
+	}
+	err := service.Initialize()
+	assert.Error(t.T(), err)
+	assert.Contains(t.T(), err.Error(), errMsgNilDatabaseService)
+}
+
 func (t *TestSuite) TestStartAndStopWithoutInitialize() {
 	service := &Service{}
 	err := service.Start()
@@ -40,7 +58,10 @@ func (t *TestSuite) TestStartAndStopWithoutInitialize() {
 }
 
 func (t *TestSuite) TestConcurrentInitialize() {
-	service := &Service{}
+	service := &Service{
+		ConfigService:   &config.Service{},
+		DatabaseService: &database.Service{},
+	}
 
 	const goroutines = 100
 	done := make(chan error, goroutines)
@@ -63,7 +84,10 @@ func (t *TestSuite) TestConcurrentInitialize() {
 }
 
 func (t *TestSuite) TestConcurrentStart() {
-	service := &Service{}
+	service := &Service{
+		ConfigService:   &config.Service{},
+		DatabaseService: &database.Service{},
+	}
 
 	const goroutines = 100
 	done := make(chan error, goroutines)
@@ -101,7 +125,10 @@ func (t *TestSuite) TestConcurrentStart() {
 }
 
 func (t *TestSuite) TestConcurrentStop() {
-	service := &Service{}
+	service := &Service{
+		ConfigService:   &config.Service{},
+		DatabaseService: &database.Service{},
+	}
 
 	// Initialize and start the service
 	err := service.Initialize()
